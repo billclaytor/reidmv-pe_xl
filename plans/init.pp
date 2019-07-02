@@ -8,6 +8,7 @@ plan pe_xl (
   Boolean $install   = false,
   Boolean $configure = false,
   Boolean $upgrade   = false,
+  Boolean $ha        = true,
 
   Optional[String[1]]        $master_host = undef,
   Optional[String[1]]        $puppetdb_database_host = undef,
@@ -27,8 +28,20 @@ plan pe_xl (
   Optional[String[1]]        $stagingdir = undef,
 ) {
 
+  # optionally run the 'without_ha' versions of these plans
+  if $ha {
+    $install_plan = 'pe_xl::install'
+    $configure_plan = 'pe_xl::configure'
+    $upgrade_plan = 'pe_xl::upgrade'
+  }
+  else {
+    $install_plan = 'pe_xl::install_without_ha'
+    $configure_plan = 'pe_xl::configure_without_ha'
+    $upgrade_plan = 'pe_xl::upgrade_without_ha'
+  }
+
   if $install {
-    run_plan('pe_xl::install',
+    run_plan($install_plan,
       master_host                    => $master_host,
       puppetdb_database_host         => $puppetdb_database_host,
       master_replica_host            => $master_replica_host,
@@ -45,7 +58,7 @@ plan pe_xl (
   }
 
   if $configure {
-    run_plan('pe_xl::configure',
+    run_plan($configure_plan,
       master_host                    => $master_host,
       puppetdb_database_host         => $puppetdb_database_host,
       master_replica_host            => $master_replica_host,
@@ -61,7 +74,7 @@ plan pe_xl (
   }
 
   if $upgrade {
-    run_plan('pe_xl::upgrade',
+    run_plan($upgrade_plan,
       master_host                    => $master_host,
       puppetdb_database_host         => $puppetdb_database_host,
       master_replica_host            => $master_replica_host,
